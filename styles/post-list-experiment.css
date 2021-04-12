@@ -1,0 +1,36 @@
+.wp-list-table.posts tr {
+	background: none;
+}
+.wp-list-table.posts td {
+	border-bottom: 1px solid #c3c4c7;
+	padding: 16px;
+	vertical-align: middle;
+}
+.wp-list-table.posts th.check-column {
+	border-bottom: 1px solid #c3c4c7;
+	padding-top: 0;
+	vertical-align: middle;
+}
+.wp-list-table.posts tfoot td.check-column {
+	border-bottom: none;
+}
+
+.wp-list-table.posts .column-custom-title .custom-title {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.wp-list-table.posts .column-featured-image {
+	line-height: 0;
+	width: 92px;
+}
+.wp-list-table.posts .column-featured-image img {
+	height: auto;
+	max-width: 80px;
+	margin: 0px
+}
+
+.wp-list-table.posts .column-more-menu {
+	text-align: right;
+	width: 40px;
+}
