@@ -79,7 +79,10 @@ class Copons_Post_List_Experiment {
 		global $post;
 		$can_edit_post = current_user_can( 'edit_post', $post->ID );
 
-		printf( '<div class="author">%s</div>', get_the_author() );
+		$count_users = count_users();
+		if ( $count_users['total_users'] > 1 ) {
+			printf( '<div class="author">%s</div>', get_the_author() );
+		}
 
 		$title = _draft_or_post_title();
 		if ( $can_edit_post && 'trash' !== $post->post_status ) {
@@ -97,7 +100,7 @@ class Copons_Post_List_Experiment {
 
 		$time_info = self::get_time_info();
 		printf(
-			'<time class="relative-time" datetime="%s">%s</time>',
+			'<time class="relative-time" datetime="%s"><span class="dashicons dashicons-clock"></span>%s</time>',
 			$time_info['timestamp'],
 			$time_info['human']
 		);
