@@ -19,6 +19,9 @@
 	font-size: 20px;
 	font-weight: bold;
 }
+.wp-list-table.posts .column-custom-title .relative-time {
+	display: block;
+}
 
 .wp-list-table.posts .column-featured-image {
 	line-height: 0;

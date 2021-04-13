@@ -57,7 +57,7 @@ class Copons_Post_List_Experiment {
 	public static function display_custom_columns( $column_name ) {
 		global $post;
 		if ( 'custom-title' === $column_name ) {
-			self::echo_custom_title();
+			self::display_custom_title();
 			return;
 		}
 
@@ -67,17 +67,21 @@ class Copons_Post_List_Experiment {
 		}
 
 		if ( 'more-menu' === $column_name ) {
-			echo '<a href="#"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">' . __( 'Toggle menu' ) . '</span></span></a>';
+			printf(
+				'<a href="#"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></a>',
+				__( 'Toggle menu' )
+			);
 			return;
 		}
 	}
 
-	private static function echo_custom_title() {
+	private static function display_custom_title() {
 		global $post;
 		$can_edit_post = current_user_can( 'edit_post', $post->ID );
 
-		$title = _draft_or_post_title();
+		printf( '<div class="author">%s</div>', get_the_author() );
 
+		$title = _draft_or_post_title();
 		if ( $can_edit_post && 'trash' !== $post->post_status ) {
 			printf(
 				'<a class="custom-title" href="%s" aria-label="%s">%s</a>',
@@ -89,10 +93,58 @@ class Copons_Post_List_Experiment {
 		} else {
 			printf( '<span class="custom-title">%s</span>', $title );
 		}
-
 		_post_states( $post );
 
+		$time_info = self::get_time_info();
+		printf(
+			'<time class="relative-time" datetime="%s">%s</time>',
+			$time_info['timestamp'],
+			$time_info['human']
+		);
+
 		get_inline_data( $post );
+	}
+
+	private static function get_time_info() {
+		global $post;
+
+		$time_info = array(
+			'timestamp' => '',
+			'human'     => '',
+		);
+
+		$time_info['timestamp'] = get_post_time();
+		if ( in_array( $post->post_status, array( 'draft', 'trash', 'pending' ) ) ) {
+			$time_info['timestamp'] = get_post_modified_time();
+		}
+
+		$time_info['human'] = sprintf(
+			/* translators: 1: Post date, 2: Post time. */
+			__( '%1$s at %2$s' ),
+			wp_date( get_option('date_format'), $time_info['timestamp'] ),
+			wp_date( get_option('time_format'), $time_info['timestamp'] )
+		);
+
+		if ( 'future' === $post->post_status ) {
+			if ( DAY_IN_SECONDS >  time() - $time_info['timestamp'] ) {
+				$time_info['human'] = sprintf(
+					/* translators: Refers to time */
+					__( 'Tomorrow at %s' ),
+					wp_date( get_option('time_format'), $time_info['timestamp'] )
+				);
+			}
+			if ( time() > $time_info['timestamp'] ) {
+				$time_info['human'] .= sprintf( ' <strong>%s</strong>', __( '(Missed schedule)' ) );
+			}
+		} else if ( WEEK_IN_SECONDS > time() - $time_info['timestamp'] ) {
+			$time_info['human'] = sprintf(
+				/* translators: Refers to relative time */
+				__( '%s ago' ),
+				human_time_diff( $time_info['timestamp'] )
+			);
+		}
+
+		return $time_info;
 	}
 }
 
