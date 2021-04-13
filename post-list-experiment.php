@@ -12,7 +12,7 @@ class Copons_Post_List_Experiment {
 	public static function init() {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'admin_enqueue_scripts' ] );
 
-		add_filter( 'post_row_actions', [ __CLASS__, 'remove_post_row_actions' ] );
+		//add_filter( 'post_row_actions', [ __CLASS__, 'remove_post_row_actions' ] );
 		add_filter( 'manage_posts_columns', [ __CLASS__, 'customize_posts_columns' ], 100 );
 		add_action( 'manage_posts_custom_column', [ __CLASS__, 'display_custom_columns' ] );
 	}
@@ -28,11 +28,20 @@ class Copons_Post_List_Experiment {
 
 		wp_register_style(
 			'post-list-experiment',
-			plugins_url( 'styles/post-list-experiment.css', __FILE__ ),
+			plugins_url( 'post-list-experiment.css', __FILE__ ),
 			array(),
-			filemtime( plugin_dir_path( __FILE__ ) . 'styles/post-list-experiment.css' )
+			filemtime( plugin_dir_path( __FILE__ ) . 'post-list-experiment.css' )
 		);
 		wp_enqueue_style( 'post-list-experiment' );
+
+		wp_register_script(
+			'post-list-experiment',
+			plugins_url( 'post-list-experiment.js', __FILE__ ),
+			array( 'wp-dom-ready' ),
+			filemtime( plugin_dir_path( __FILE__ ) . 'post-list-experiment.js' ),
+			true
+		);
+		wp_enqueue_script( 'post-list-experiment' );
 	}
 
 	public static function remove_post_row_actions() {
@@ -164,10 +173,21 @@ class Copons_Post_List_Experiment {
 	}
 
 	private static function display_more_menu() {
+		global $post;
+
+		echo '<div class="more-menu">';
+
 		printf(
-			'<div class="more-menu"><a href="#"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></a></div>',
+			'<a href="#" class="more-menu-toggle"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></a>',
 			__( 'Toggle menu' )
 		);
+
+		$actions = array();
+		$actions = apply_filters( 'post_row_actions', $actions, $post );
+
+		printf( '<div class="more-menu-popover hidden">%s</div>', 'More Menu' );
+
+		echo '</div>';
 	}
 }
 
