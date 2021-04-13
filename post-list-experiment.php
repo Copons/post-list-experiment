@@ -13,7 +13,7 @@ class Copons_Post_List_Experiment {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'admin_enqueue_scripts' ] );
 
 		add_filter( 'post_row_actions', [ __CLASS__, 'remove_post_row_actions' ] );
-		add_filter( 'manage_posts_columns', [ __CLASS__, 'customize_posts_columns' ]);
+		add_filter( 'manage_posts_columns', [ __CLASS__, 'customize_posts_columns' ], 100 );
 		add_action( 'manage_posts_custom_column', [ __CLASS__, 'display_custom_columns' ] );
 	}
 
@@ -47,65 +47,78 @@ class Copons_Post_List_Experiment {
 		unset( $posts_columns[ 'comments'] );
 		unset( $posts_columns[ 'date'] );
 
-		$posts_columns['custom-title'] = __( 'Posts' );
-		$posts_columns['featured-image'] = '';
-		$posts_columns['more-menu'] = '';
+		// Make sure checkbox and post item are the first two columns,
+		// then append all other custom columns, and finally the more menu.
+		$custom_columns = array();
+		if ( array_key_exists( 'cb', $posts_columns ) ) {
+			$custom_columns['cb'] = $posts_columns['cb'];
+		}
+		$custom_columns['post-item'] = __( 'Posts' );
+		$custom_columns = array_merge( $custom_columns, $posts_columns );
+		$custom_columns['more-menu'] = '';
 
-		return $posts_columns;
+		return $custom_columns;
 	}
 
 	public static function display_custom_columns( $column_name ) {
-		global $post;
-		if ( 'custom-title' === $column_name ) {
-			self::display_custom_title();
-			return;
-		}
-
-		if ( 'featured-image' === $column_name ) {
-			the_post_thumbnail( 'medium' );
+		if ( 'post-item' === $column_name ) {
+			self::display_post_item();
 			return;
 		}
 
 		if ( 'more-menu' === $column_name ) {
-			printf(
-				'<a href="#"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></a>',
-				__( 'Toggle menu' )
-			);
-			return;
+			self::display_more_menu();
 		}
 	}
 
-	private static function display_custom_title() {
+	private static function display_post_item() {
 		global $post;
 		$can_edit_post = current_user_can( 'edit_post', $post->ID );
-
-		$count_users = count_users();
-		if ( $count_users['total_users'] > 1 ) {
-			printf( '<div class="author">%s</div>', get_the_author() );
-		}
-
 		$title = _draft_or_post_title();
-		if ( $can_edit_post && 'trash' !== $post->post_status ) {
+
+		if ( $can_edit_post ) {
 			printf(
-				'<a class="custom-title" href="%s" aria-label="%s">%s</a>',
-				get_edit_post_link( $post->ID ),
+				'<a class="post-item" href="%s" aria-label="%s">',
+				get_edit_post_link(),
 				/* translators: %s: Post title. */
 				esc_attr( sprintf( __( '&#8220;%s&#8221; (Edit)' ), $title ) ),
-				$title
 			);
 		} else {
-			printf( '<span class="custom-title">%s</span>', $title );
+			echo '<div class="post-item">';
 		}
+
+		echo '<div>';
+
+		$count_users = count_users();
+		if ( $count_users['total_users'] >= 1 ) {
+			printf( '<div class="post-author">%s</div>', get_the_author() );
+		}
+		
+		echo '<div class="post-title">';
+		printf( '<strong>%s</strong>', $title );
 		_post_states( $post );
+		echo '</div>';
 
 		$time_info = self::get_time_info();
 		printf(
-			'<time class="relative-time" datetime="%s"><span class="dashicons dashicons-clock"></span>%s</time>',
+			'<time class="post-date" datetime="%s"><span class="dashicons dashicons-clock"></span>%s</time>',
 			$time_info['timestamp'],
 			$time_info['human']
 		);
 
+		echo '</div>';
+
+		echo '<div class="post-thumbnail">';
+		the_post_thumbnail( 'medium' );
+		echo '</div>';
+
 		get_inline_data( $post );
+
+		if ( $can_edit_post ) {
+			echo '</a>';
+		} else {
+			echo '</div>';
+		}
 	}
 
 	private static function get_time_info() {
@@ -148,6 +161,13 @@ class Copons_Post_List_Experiment {
 		}
 
 		return $time_info;
+	}
+
+	private static function display_more_menu() {
+		printf(
+			'<div class="more-menu"><a href="#"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></a></div>',
+			__( 'Toggle menu' )
+		);
 	}
 }
 
