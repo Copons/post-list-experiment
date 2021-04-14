@@ -76,9 +76,62 @@
 
 .wp-list-table.posts .column-more-menu {
 	padding: 0;
-	text-align: right;
 	width: 52px;
 }
-.wp-list-table.posts .column-more-menu a {
+.wp-list-table.posts .column-more-menu .more-menu-wrapper {
+	position: relative;
+}
+.wp-list-table.posts .column-more-menu .more-menu-toggle {
 	padding: 8px 16px;
+}
+.wp-list-table.posts .column-more-menu .more-menu-toggle .dashicons {
+	transition: transform .15s cubic-bezier(.175,.885,.32,1.275);
+}
+.wp-list-table.posts .column-more-menu .is-menu-visible .more-menu-toggle .dashicons {
+	transform: rotate( 90deg );
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover {
+	background: #ffffff;
+	border: 1px solid #c3c4c7;
+	box-shadow: 0 2px 5px rgba( 0, 0, 0, 0.1 ), 0 0 56px rgba( 0, 0, 0, 0.075 );
+	display: none;
+	position: absolute;
+	right: 5px;
+	top: 36px;
+	width: 200px;
+	z-index: 2;
+}
+.wp-list-table.posts .column-more-menu .is-menu-visible .more-menu-popover {
+	display: block;
+	padding: 5px 0;
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover-arrow {
+	border-top: 0;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
+	border-bottom: 10px solid #c3c4c7;
+	position: absolute;
+	right: 10px;
+	top: -10px;
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover-arrow::before {
+	border-top: 0;
+	border-bottom: 10px solid #ffffff;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
+	content: '';
+	display: block;
+	position: absolute;
+	right: -10px;
+	top: 2px;
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a {
+	background: #ffffff;
+	color: #1e1e1e;
+	display: block;
+	padding: 8px 16px;
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a:hover {
+	color: #ffffff;
+	background: #3858e9;
 }

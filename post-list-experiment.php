@@ -63,7 +63,7 @@ class Copons_Post_List_Experiment {
 			$custom_columns['cb'] = $posts_columns['cb'];
 		}
 		$custom_columns['post-item'] = __( 'Posts' );
-		$custom_columns = array_merge( $custom_columns, $posts_columns );
+		$custom_columns              = array_merge( $custom_columns, $posts_columns );
 		$custom_columns['more-menu'] = '';
 
 		return $custom_columns;
@@ -83,7 +83,7 @@ class Copons_Post_List_Experiment {
 	private static function display_post_item() {
 		global $post;
 		$can_edit_post = current_user_can( 'edit_post', $post->ID );
-		$title = _draft_or_post_title();
+		$title         = _draft_or_post_title();
 
 		if ( $can_edit_post ) {
 			printf(
@@ -99,9 +99,9 @@ class Copons_Post_List_Experiment {
 		echo '<div>';
 
 		$count_users = count_users();
-		if ( $count_users['total_users'] >= 1 ) {
+		//if ( $count_users['total_users'] > 1 ) {
 			printf( '<div class="post-author">%s</div>', get_the_author() );
-		}
+		//}
 		
 		echo '<div class="post-title">';
 		printf( '<strong>%s</strong>', $title );
@@ -174,20 +174,55 @@ class Copons_Post_List_Experiment {
 
 	private static function display_more_menu() {
 		global $post;
+		$actions         = array();
+		$can_edit_post   = current_user_can( 'edit_post', $post->ID );
+		$can_delete_post = current_user_can( 'delete_post', $post->ID );
+		$title           = _draft_or_post_title();
 
-		echo '<div class="more-menu">';
+		if ( $can_edit_post && 'trash' !== $post->post_status ) {
+			$actions['edit'] = sprintf(
+				'<a href="%s" aria-label="%s">%s</a>',
+				get_edit_post_link( $post->ID ),
+				/* translators: %s: Post title. */
+				esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' ), $title ) ),
+				__( 'Edit' )
+			);
+		}
 
+		if ( $can_delete_post ) {
+			if ( 'trash' === $post->post_status ) {
+				$actions['untrash'] = sprintf(
+					'<a href="%s" aria-label="%s">%s</a>',
+					wp_nonce_url( sprintf( get_edit_post_link( $post->ID ) . '&amp;action=untrash', $post->ID ), 'untrash-post_' . $post->ID ),
+					/* translators: %s: Post title. */
+					esc_attr( sprintf( __( 'Restore &#8220;%s&#8221; from the Trash' ), $title ) ),
+					__( 'Restore' )
+				);
+			} else {
+				$actions['trash'] = sprintf(
+					'<a href="%s" class="submitdelete" aria-label="%s">%s</a>',
+					get_delete_post_link( $post->ID ),
+					/* translators: %s: Post title. */
+					esc_attr( sprintf( __( 'Move &#8220;%s&#8221; to the Trash' ), $title ) ),
+					_x( 'Trash', 'verb' )
+				);
+			}
+		}
+
+		$actions = apply_filters( 'post_row_actions', $actions, $post );
+
+		echo '<div class="more-menu-wrapper">';
 		printf(
 			'<a href="#" class="more-menu-toggle"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></a>',
 			__( 'Toggle menu' )
 		);
+		echo '<div class="more-menu-popover"><div class="more-menu-popover-arrow"></div>';
 
-		$actions = array();
-		$actions = apply_filters( 'post_row_actions', $actions, $post );
+		foreach( $actions as $action ) {
+			echo $action;
+		}
 
-		printf( '<div class="more-menu-popover hidden">%s</div>', 'More Menu' );
-
-		echo '</div>';
+		echo '</div></div>';
 	}
 }
 
