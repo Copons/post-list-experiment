@@ -135,3 +135,31 @@
 	color: #ffffff;
 	background: var( --post-list-highlight-color );
 }
+.wp-list-table.posts .column-more-menu .more-menu-popover a::before {
+	content: "\f180";
+	font: normal 16px/1 dashicons;
+	margin-right: 8px;
+	vertical-align: text-bottom;
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="edit"]::before {
+	content: "\f327";
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="untrash"]::before {
+	content: "\f171";
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="trash"]::before,
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="delete"]::before {
+	content: "\f182";
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="view"]::before {
+	content: "\f504";
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="comments"]::before {
+	content: "\f101";
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="copy-link"]::before {
+	content: "\f103";
+}
+.wp-list-table.posts .column-more-menu .more-menu-popover a[data-action="publish"]::before {
+	content: "\f116";
+}

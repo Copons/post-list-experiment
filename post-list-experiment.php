@@ -187,14 +187,16 @@ class Copons_Post_List_Experiment {
 
 	private static function display_more_menu() {
 		global $post;
-		$actions         = array();
-		$can_edit_post   = current_user_can( 'edit_post', $post->ID );
-		$can_delete_post = current_user_can( 'delete_post', $post->ID );
-		$title           = _draft_or_post_title();
+		$actions               = array();
+		$can_edit_post         = current_user_can( 'edit_post', $post->ID );
+		$can_delete_post       = current_user_can( 'delete_post', $post->ID );
+		$can_publish_posts     = current_user_can( 'publish_posts' );
+		$can_moderate_comments = current_user_can( 'moderate_comments', $post->ID );
+		$title                 = _draft_or_post_title();
 
 		if ( $can_edit_post && 'trash' !== $post->post_status ) {
 			$actions['edit'] = sprintf(
-				'<a href="%s" aria-label="%s">%s</a>',
+				'<a href="%s" data-action="edit" aria-label="%s">%s</a>',
 				get_edit_post_link( $post->ID ),
 				/* translators: %s: Post title. */
 				esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' ), $title ) ),
@@ -202,10 +204,69 @@ class Copons_Post_List_Experiment {
 			);
 		}
 
+		if ( in_array( $post->post_status, array( 'pending', 'draft', 'future' ), true ) ) {
+			if ( $can_edit_post ) {
+				$preview_link    = get_preview_post_link( $post );
+				$actions['view'] = sprintf(
+					'<a href="%s" data-action="view" rel="bookmark" aria-label="%s">%s</a>',
+					esc_url( $preview_link ),
+					/* translators: %s: Post title. */
+					esc_attr( sprintf( __( 'Preview &#8220;%s&#8221;' ), $title ) ),
+					__( 'Preview' )
+				);
+			}
+		} elseif ( 'trash' !== $post->post_status ) {
+			$actions['view'] = sprintf(
+				'<a href="%s" data-action="view" rel="bookmark" aria-label="%s">%s</a>',
+				get_permalink( $post->ID ),
+				/* translators: %s: Post title. */
+				esc_attr( sprintf( __( 'View &#8220;%s&#8221;' ), $title ) ),
+				__( 'View' )
+			);
+		}
+
+		if ( $can_publish_posts && in_array( $post->post_status, array( 'pending', 'draft' ), true ) ) {
+			$actions['publish'] = sprintf(
+				'<a href="%s" data-action="publish" aria-label="%s">%s</a>',
+				'#',
+				/* translators: %s: Post title. */
+				esc_attr( sprintf( __( 'Publish &#8220;%s&#8221;' ), $title ) ),
+				__( 'Publish' )
+			);
+		}
+
+		if ( $can_edit_post && $can_moderate_comments ) {
+			$actions['comments'] = sprintf(
+				'<a href="%s" data-action="comments" aria-label="%s">%s</a>',
+				esc_url(
+					add_query_arg(
+						array(
+							'p'              => $post->ID,
+							'comment_status' => 'approved',
+						),
+						admin_url( 'edit-comments.php' )
+					)
+				),
+				/* translators: %s: Post title. */
+				esc_attr( sprintf( __( 'View comments to &#8220;%s&#8221;' ), $title ) ),
+				__( 'Comments' )
+			);
+		}
+
+		if ( 'publish' === $post->post_status ) {
+			$actions['copy-link'] = sprintf(
+				'<a href="%s" data-action="copy-link" aria-label="%s">%s</a>',
+				get_permalink( $post->ID ),
+				/* translators: %s: Post title. */
+				esc_attr( sprintf( __( 'Copy link to &#8220;%s&#8221;' ), $title ) ),
+				__( 'Copy link' )
+			);
+		}
+
 		if ( $can_delete_post ) {
 			if ( 'trash' === $post->post_status ) {
 				$actions['untrash'] = sprintf(
-					'<a href="%s" aria-label="%s">%s</a>',
+					'<a href="%s" data-action="untrash" aria-label="%s">%s</a>',
 					wp_nonce_url( sprintf( get_edit_post_link( $post->ID ) . '&amp;action=untrash', $post->ID ), 'untrash-post_' . $post->ID ),
 					/* translators: %s: Post title. */
 					esc_attr( sprintf( __( 'Restore &#8220;%s&#8221; from the Trash' ), $title ) ),
@@ -213,13 +274,23 @@ class Copons_Post_List_Experiment {
 				);
 			} else {
 				$actions['trash'] = sprintf(
-					'<a href="%s" class="submitdelete" aria-label="%s">%s</a>',
+					'<a href="%s" data-action="trash" aria-label="%s">%s</a>',
 					get_delete_post_link( $post->ID ),
 					/* translators: %s: Post title. */
 					esc_attr( sprintf( __( 'Move &#8220;%s&#8221; to the Trash' ), $title ) ),
 					_x( 'Trash', 'verb' )
 				);
 			}
+		}
+
+		if ( $can_delete_post && 'trash' === $post->post_status ) {
+			$actions['delete'] = sprintf(
+				'<a href="%s" data-action="delete" aria-label="%s">%s</a>',
+				get_delete_post_link( $post->ID, '', true ),
+				/* translators: %s: Post title. */
+				esc_attr( sprintf( __( 'Delete &#8220;%s&#8221; permanently' ), $title ) ),
+				__( 'Delete Permanently' )
+			);
 		}
 
 		$actions = apply_filters( 'post_row_actions', $actions, $post );
