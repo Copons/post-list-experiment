@@ -127,11 +127,11 @@
 }
 .wp-list-table.posts .column-more-menu .more-menu-popover a {
 	background: #ffffff;
-	color: #1e1e1e;
+	color: var( --post-list-base-color );
 	display: block;
 	padding: 8px 16px;
 }
 .wp-list-table.posts .column-more-menu .more-menu-popover a:hover {
 	color: #ffffff;
-	background: #3858e9;
+	background: var( --post-list-highlight-color );
 }

@@ -34,6 +34,19 @@ class Copons_Post_List_Experiment {
 		);
 		wp_enqueue_style( 'post-list-experiment' );
 
+		// Enqueue admin theme colors
+		global $_wp_admin_css_colors;
+		$current_admin_theme = get_user_option( 'admin_color' );
+		if ( empty( $current_admin_theme ) || ! isset( $_wp_admin_css_colors[ $current_admin_theme ] ) ) {
+			$current_admin_theme = 'fresh';
+		}
+		$current_colors = $_wp_admin_css_colors[ $current_admin_theme ]->colors;
+		$custom_css = ':root {
+			--post-list-base-color: ' . $current_colors[0] . ';
+			--post-list-highlight-color: ' . $current_colors[1] . ';
+		}';
+		wp_add_inline_style( 'post-list-experiment', $custom_css );
+
 		wp_register_script(
 			'post-list-experiment',
 			plugins_url( 'post-list-experiment.js', __FILE__ ),
@@ -85,7 +98,7 @@ class Copons_Post_List_Experiment {
 		$can_edit_post = current_user_can( 'edit_post', $post->ID );
 		$title         = _draft_or_post_title();
 
-		if ( $can_edit_post ) {
+		if ( $can_edit_post && 'trash' !== $post->post_status ) {
 			printf(
 				'<a class="post-item" href="%s" aria-label="%s">',
 				get_edit_post_link(),
@@ -123,7 +136,7 @@ class Copons_Post_List_Experiment {
 
 		get_inline_data( $post );
 
-		if ( $can_edit_post ) {
+		if ( $can_edit_post && 'trash' !== $post->post_status ) {
 			echo '</a>';
 		} else {
 			echo '</div>';
@@ -213,7 +226,7 @@ class Copons_Post_List_Experiment {
 
 		echo '<div class="more-menu-wrapper">';
 		printf(
-			'<a href="#" class="more-menu-toggle"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></a>',
+			'<button class="more-menu-toggle button-link" type="button"><span class="dashicons dashicons-ellipsis"><span class="screen-reader-text">%s</span></span></button>',
 			__( 'Toggle menu' )
 		);
 		echo '<div class="more-menu-popover"><div class="more-menu-popover-arrow"></div>';
